@@ -10,12 +10,12 @@ class Box {
   }
 
   getRightBox() {
-    if (this.x === 4) return null;
+    if (this.x === 7) return null;
     return new Box(this.x + 1, this.y);
   }
 
   getBottomBox() {
-    if (this.y === 4) return null;
+    if (this.y === 7) return null;
     return new Box(this.x, this.y + 1);
   }
 
@@ -41,13 +41,11 @@ const swapBoxes = (grid, box1, box2) => {
   grid[box2.y][box2.x] = temp;
 }
 
-
-
 let O = 'O';
 let X = 'X';
-const getRandomGrid = () => {
-  let grid = [[O, O, O, "", "", "", "", ""], [O, O, O, "", "", "", "", ""], [O, O, O, "", "", "", "", ""], ["", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", ""], ["", "", "", "", "", X, X, X], ["", "", "", "", "", X, X, X], ["", "", "", "", "", X, X, X]];
+const getGrid = () => {
+  let grid = [[O, O, O, 0, 0, 0, 0, 0], [O, O, O, 0, 0, 0, 0, 0], [O, O, O, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, X, X, X], [0, 0, 0, 0, 0, X, X, X], [0, 0, 0, 0, 0, X, X, X]];
 
   return grid;
 };
@@ -71,7 +69,7 @@ class State {
   }
 
   static start() {
-    return new State(getRandomGrid(), 0, 0, "playing");
+    return new State(getGrid(), 0, 0, "playing");
   }
 }
 
@@ -112,7 +110,7 @@ class Game {
   }
 
   render() {
-    const { grid, move, time, status } = this.state;
+    let { grid, move, time, status } = this.state;
 
     // Render grid
     const newGrid = document.createElement("div");
@@ -122,76 +120,92 @@ class Game {
         const button = document.createElement("button");
 
         if (status === "playing") {
-          button.addEventListener("click", readyBox);
-          function readyBox(event) {
-            if (event.target.textContent === 0) {
-              // grid[i][j] = 0;
-              // console.log(event.target.textContent + ' ');
-              event.target.textContent = "";
-              button.textContent = '';
-            }
-          }
+
           button.addEventListener("click", this.handleClickBox(new Box(j, i))); // "click" mousedown  mouseup
           // Drag and Drop
-          button.draggable = true;
+          if (grid[i][j] === 0) {
+            button.draggable = false;
+          } else {
+            button.draggable = true;
+          }
           let content;
           let data;
-          button.addEventListener("dragstart", dragStart);
-          button.addEventListener("dragend", dragEnd);
+
           function dragStart(event) {
             event.dataTransfer.setData('text', event.target.id);
             event.dataTransfer.setData('content', event.target.textContent);
-            // console.log('dragstart');
             setTimeout(() => {
-              // button.textContent = '';
-              if (this.textContent !== '') {
+              if (this.textContent === X || this.textContent === O) {
                 grid[i][j] = 0;
+              } else {
+                return false;
               }
-              // event.target.style.opacity = '0';
-              // event.target.style.display = 'none';
-              // this.classList.add("dropZone");
-            }, 500)
+            }, 0)
           };
 
           function dragEnd(event) {
-            console.log('dragEnd');
+            if (this.textContent !== X || this.textContent !== O) {
+              return false;
+            }
           };
 
           const dragOver = function (event) {
-            event.preventDefault();
-            console.log('dragover');
+            content = event.dataTransfer.getData('content');
+            if (content === 0) {
+              return false;
+            } else {
+              event.preventDefault();
+            }
           };
           function dragEnter(event) {
-            event.preventDefault();
-            console.log('dragEnter' + this.textContent);
+            content = event.dataTransfer.getData('content');
+            if (content === 0) {
+              return false;
+            } else {
+              event.preventDefault();
+            }
           };
 
           button.addEventListener('drop', function (event) {
             event.preventDefault();
             data = event.dataTransfer.getData('text');
             content = event.dataTransfer.getData('content');
-            console.log('dragDrop ' + content);
             setTimeout(() => {
-              if (grid[i][j] == 0) {
+              if (grid[i][j] === 0) {
                 grid[i][j] = content;
+              } else {
+                return false;
               }
             }, 0);
           });
 
+          button.addEventListener("dragstart", dragStart);
+          button.addEventListener("dragend", dragEnd);
           button.addEventListener("dragover", dragOver);
           button.addEventListener("dragenter", dragEnter);
 
-
-          button.textContent = grid[i][j] === "" ? 0 : grid[i][j].toString();
+          button.textContent = grid[i][j] === 0 ? "" : grid[i][j];
           newGrid.appendChild(button);
 
-          if (grid[i][j] == 0) {
+          if (grid[i][j] === 0) {
             button.classList.add("dropZone");
           }
         }
       }
     }
     document.querySelector(".grid").replaceWith(newGrid);
+    let playerName;
+    if (grid[0][0] === X && grid[0][1] === X && grid[0][2] === X &&
+      grid[1][0] === X && grid[1][1] === X && grid[1][2] === X &&
+      grid[2][0] === X && grid[2][1] === X && grid[2][2] === X) {
+      status = "won";
+      playerName = X;
+    } else if (grid[5][5] === O && grid[5][6] === O && grid[5][7] === O &&
+      grid[6][5] === O && grid[6][6] === O && grid[6][7] === O &&
+      grid[7][5] === O && grid[7][6] === O && grid[7][7] === O) {
+      status = "won";
+      playerName = O;
+    }
 
     //Render button
     const newButton = document.createElement("button");
@@ -210,10 +224,9 @@ class Game {
 
     //Render message
     if (status === "won") {
-      document.querySelector(".message").textContent = `Ура! Вы выиграли, за ${time} сек.`;
+      document.querySelector(".message").textContent = `Ура! Выиграл игрок ${playerName}`;
     } else {
       document.querySelector(".message").textContent = "";
-      growing.innerHTML = "";
     }
   }
 }

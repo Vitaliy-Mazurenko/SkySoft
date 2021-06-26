@@ -45,6 +45,7 @@ border-radius: 3px;
 
 .dropZone{
   opacity: 0.05;
+  cursor: default;
 }
 
 .footer {
@@ -103,22 +104,5 @@ animation: color-change 3s infinite;
     width: 100%;
   }
 }
-#growing  {
-  position: absolute;
-}
-#growing img {
-  animation: go-width 5s 1;
-}
-
-@media(max-width: 450px){
-  #growing img {
-    width: 84%;
-  }
-}
 
 
-@media (max-width: 350px){
-.message {
-  font-size: 1.5rem;
-  }
-}
