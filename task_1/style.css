@@ -4,7 +4,6 @@ html {
 
 body {
   height: 100%;
-/*  background-image: linear-gradient(#7B9F35,#226666);*/
   background-image: linear-gradient(to bottom right, rgb(100, 204, 121), rgb(122, 214, 139), rgb(145, 224, 156), rgb(167, 235, 174), rgb(190, 245, 191), rgb(212, 255, 209), rgb(193, 246, 189), rgb(173, 236, 170), rgb(154, 227, 150), rgb(134, 218, 130), rgb(115, 208, 111), rgb(95, 199, 91));
   display: flex;
   justify-content: center;
@@ -43,6 +42,9 @@ cursor: pointer;
 border-radius: 3px;
 }
 
+.elem.active {
+  border: 1px solid red;
+}
 .dropZone{
   opacity: 0.05;
   cursor: default;

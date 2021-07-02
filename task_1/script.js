@@ -4,35 +4,6 @@ class Box {
     this.y = y;
   }
 
-  getTopBox() {
-    if (this.y === 0) return null;
-    return new Box(this.x, this.y - 1);
-  }
-
-  getRightBox() {
-    if (this.x === 7) return null;
-    return new Box(this.x + 1, this.y);
-  }
-
-  getBottomBox() {
-    if (this.y === 7) return null;
-    return new Box(this.x, this.y + 1);
-  }
-
-  getLeftBox() {
-    if (this.x === 0) return null;
-    return new Box(this.x - 1, this.y);
-  }
-
-  getNextdoorBoxes() {
-    return [
-      this.getTopBox(),
-      this.getRightBox(),
-      this.getBottomBox(),
-      this.getLeftBox()
-    ].filter(box => box !== null);
-  }
-
 }
 
 const swapBoxes = (grid, box1, box2) => {
@@ -79,7 +50,6 @@ class Game {
     this.tickId = null;
     this.tick = this.tick.bind(this);
     this.render();
-    this.handleClickBox = this.handleClickBox.bind(this);
   }
 
   static ready() {
@@ -95,19 +65,6 @@ class Game {
     this.render();
   }
 
-  handleClickBox(box) {
-    return function () {
-      const nextdoorBoxes = box.getNextdoorBoxes();
-      const blankBox = nextdoorBoxes.find(
-        nextdoorBox => this.state.grid[nextdoorBox.y][nextdoorBox.x] === 0
-      );
-      if (blankBox) {
-        const newGrid = [...this.state.grid];
-        swapBoxes(newGrid, box, blankBox);
-
-      }
-    }.bind(this);
-  }
 
   render() {
     let { grid, move, time, status } = this.state;
@@ -118,71 +75,51 @@ class Game {
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
         const button = document.createElement("button");
-
+        button.className = "elem";
         if (status === "playing") {
 
-          button.addEventListener("click", this.handleClickBox(new Box(j, i))); // "click" mousedown  mouseup
+          button.addEventListener("click", initElems('.elem')); // "click" mousedown  mouseup
           // Drag and Drop
-          if (grid[i][j] === 0) {
-            button.draggable = false;
-          } else {
-            button.draggable = true;
+          // initElems('.elem');
+          function initElems(selector) {
+            let elems = document.querySelectorAll(selector);
+
+            console.log(elems.length);
+            for (var i = 0; i < elems.length; i++) {
+              console.log('clik');
+              elems[i].addEventListener('click', function (event) {
+                deactivateActiveElem();
+                console.log(elems.length);
+                this.classList.add('active');
+                event.stopPropagation();
+              });
+            }
           }
-          let content;
-          let data;
 
-          function dragStart(event) {
-            event.dataTransfer.setData('text', event.target.id);
-            event.dataTransfer.setData('content', event.target.textContent);
-            setTimeout(() => {
-              if (this.textContent === X || this.textContent === O) {
-                grid[i][j] = 0;
-              } else {
-                return false;
-              }
-            }, 0)
-          };
-
-          function dragEnd(event) {
-            if (this.textContent !== X || this.textContent !== O) {
-              return false;
+          function deactivateActiveElem() {
+            let activeElem = getActiveElem();
+            if (activeElem) {
+              deactivateElem(activeElem);
             }
-          };
+          }
 
-          const dragOver = function (event) {
-            content = event.dataTransfer.getData('content');
-            if (content === 0) {
-              return false;
-            } else {
-              event.preventDefault();
-            }
-          };
-          function dragEnter(event) {
-            content = event.dataTransfer.getData('content');
-            if (content === 0) {
-              return false;
-            } else {
-              event.preventDefault();
-            }
-          };
+          function deactivateElem(elem) {
+            elem.classList.remove('active');
+          }
 
-          button.addEventListener('drop', function (event) {
-            event.preventDefault();
-            data = event.dataTransfer.getData('text');
-            content = event.dataTransfer.getData('content');
-            setTimeout(() => {
-              if (grid[i][j] === 0) {
-                grid[i][j] = content;
-              } else {
-                return false;
-              }
-            }, 0);
+          function getActiveElem() {
+            return document.querySelector('.active');
+          }
+
+          button.addEventListener('click', function (event) {
+            let activeElem = getActiveElem();
+            if (activeElem) {
+              activeElem.style.left = (event.clientX - activeElem.offsetWidth / 2) + 'px';
+              activeElem.style.top = (event.clientY - activeElem.offsetHeight / 2) + 'px';
+
+              deactivateElem(activeElem);
+            }
           });
-
-          button.addEventListener("dragstart", dragStart);
-          button.addEventListener("dragend", dragEnd);
-          button.addEventListener("dragover", dragOver);
-          button.addEventListener("dragenter", dragEnter);
 
           button.textContent = grid[i][j] === 0 ? "" : grid[i][j];
           newGrid.appendChild(button);
